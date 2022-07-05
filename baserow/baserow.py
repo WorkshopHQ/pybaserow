@@ -13,14 +13,14 @@ def login() -> str:
     os.environ['BASEROW_JWT'] = user_token
     return user_token
 
-def get_rows(domain_url: str, table_id: int, token: str, get_all:bool = False) -> List[Dict]:
-    url = f"{domain_url}/api/database/rows/table/{table_id}/?user_field_names=true"
+def get_rows(table_id: int, get_all: bool = False) -> List[Dict]:
+    url = f"{os.environ['BASEROW_DOMAIN']}/api/database/rows/table/{table_id}/?user_field_names=true"
     rows = []
     while True:
         res = requests.get(
             url,
             headers={
-                "Authorization": f"JWT {token}"
+                "Authorization": f"JWT {os.environ['BASEROW_JWT']}"
             }
         )
         response = json.loads(res.content)
@@ -30,6 +30,19 @@ def get_rows(domain_url: str, table_id: int, token: str, get_all:bool = False) -
         if (not get_all) or (url is None):
             break
     return rows
+
+def delete_row(table_id: int, row_id: int) -> None:
+    requests.delete(
+        f"http://baserow.hub/api/database/rows/table/{table_id}/{row_id}/",
+        headers={
+            "Authorization": f"JWT {os.environ['BASEROW_JWT']}"
+        }
+    )
+
+def delete_rows(table_id: int, row_ids: List[int]) -> None:
+    for row_id in row_ids:
+        delete_row(table_id, row_id)
+
 
 def download_file(url: str, file_name: str, output_dir: str = None) -> str:
     if output_dir is None:
