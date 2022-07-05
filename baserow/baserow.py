@@ -6,9 +6,11 @@ import urllib
 
 def login() -> str:
     # @TODO Add prompt if env variables are missing
+    os.environ.setdefault("BASEROW_JWT", "")
     url = f"{os.environ['BASEROW_DOMAIN']}/api/user/token-auth/"
     res = requests.post(url, json={"username": os.environ['BASEROW_USERNAME'], "password": os.environ['BASEROW_PASSWORD']})
     user_token = json.loads(res.text)["token"]
+    os.environ['BASEROW_JWT'] = user_token
     return user_token
 
 def get_rows(domain_url: str, table_id: int, token: str, get_all:bool = False) -> List[Dict]:
