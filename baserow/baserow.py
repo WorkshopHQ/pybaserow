@@ -4,9 +4,10 @@ import requests
 import json
 import urllib
 
-def login(domain_url: str, key: Dict) -> str:
-    url = f"{domain_url}/api/user/token-auth/"
-    res = requests.post(url, json={"username": key["username"], "password": key["password"]})
+def login() -> str:
+    # @TODO Add prompt if env variables are missing
+    url = f"{os.environ['BASEROW_DOMAIN']}/api/user/token-auth/"
+    res = requests.post(url, json={"username": os.environ['BASEROW_USERNAME'], "password": os.environ['BASEROW_PASSWORD']})
     user_token = json.loads(res.text)["token"]
     return user_token
 
