@@ -2,7 +2,10 @@ import os
 from typing import Dict
 import requests
 import json
+from pathlib import Path
 from urllib.parse import urljoin
+
+from rich.prompt import Prompt
 
 class BaserowConnect(object):
     def __init__(self, url: str) -> None:
@@ -23,7 +26,15 @@ class BaserowConnect(object):
         os.environ.setdefault("BASEROW_JWT", "")
 
 def load_cert() -> Dict:
-    return {
-        "username": "",
-        "password": ""
-    }
+    config_dir = Path(Path.home(), ".baserow")
+    if not config_dir.exists():
+        os.makedirs(config_dir)
+    # load certificate file
+    cert_path = Path(config_dir, "cert.json")
+    if not cert_path.exists():
+        username = Prompt.ask("Username")
+        password = Prompt.ask("Password")
+        with open(cert_path, "w+") as f:
+            json.dump({"username": username, "password": password}, f)
+    with open(cert_path) as f:
+        return json.load(f)
