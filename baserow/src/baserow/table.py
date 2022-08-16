@@ -5,14 +5,14 @@ import requests
 import json
 
 class Table(object):
-    def __init__(self, id: int, base_url: str, jwt_token: str) -> None:
+    def __init__(self, table_id: int, base_url: str, jwt_token: str) -> None:
         super().__init__()
-        self.id = id
+        self.table_id = table_id
         self.base_url = base_url
         self.jwt_token = jwt_token
 
     def get_rows(self, filters: List[Callable] = [], get_all: bool = False) -> Iterable:
-        url = f"/api/database/rows/table/{self.id}/?user_field_names=true"
+        url = f"/api/database/rows/table/{self.table_id}/?user_field_names=true"
         url = urljoin(self.base_url, url)
         rows = []
         while True:
@@ -29,6 +29,21 @@ class Table(object):
             if (not get_all) or (url is None):
                 break
         return rows
+
+    def del_row(self, row_id: int) -> None:
+        url = f"/api/database/rows/table/{self.table_id}/{row_id}/"
+        url = urljoin(self.base_url, url)
+        requests.delete(
+            url,
+            headers={
+                "Authorization": f"JWT {os.environ['BASEROW_JWT']}"
+            }
+        )
+
+    def del_rows(self, row_ids: List[int]) -> None:
+        for row_id in row_ids:
+            self.del_row(row_id)
+
 
 def fetch(table_id) -> Table:
     return Table(table_id, os.environ['BASEROW_URL'], os.environ['BASEROW_JWT'])
