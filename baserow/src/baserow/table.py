@@ -1,3 +1,4 @@
+import os
 from typing import Callable
 
 class Table(object):
@@ -10,4 +11,5 @@ class Table(object):
 
 def fetch(table_id) -> Table:
     print(f"table id {table_id}")
+    print(os.environ['BASEROW_JWT'])
     return Table(table_id)

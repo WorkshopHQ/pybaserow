@@ -10,20 +10,25 @@ from rich.prompt import Prompt
 class BaserowConnect(object):
     def __init__(self, url: str) -> None:
         super().__init__()
-        self.base_url = url
+        self.url = url
+        self.prev_jwt = ""
+        self.prev_url = ""
 
     def __enter__(self) -> None:
-        os.environ.setdefault("BASEROW_JWT", "")
-        url = urljoin(self.base_url, "/api/user/token-auth/")
+        self.prev_jwt = os.environ.get("BASEROW_JWT", "")
+        self.prev_url = os.environ.get("BASEROW_URL", "")
+        url = urljoin(self.url, "/api/user/token-auth/")
         res = requests.post(url, json=load_cert())
         if res.status_code != 201:
             raise Exception(f"Failed to authenticate baserow")
         user_token = json.loads(res.text)["token"]
-        os.environ['BASEROW_JWT'] = user_token
+        os.environ["BASEROW_JWT"] = user_token
+        os.environ["BASEROW_URL"] = self.url
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # reset BASEROW_JWT for safety
-        os.environ.setdefault("BASEROW_JWT", "")
+        # reset global environment on exit
+        os.environ.setdefault("BASEROW_JWT", self.prev_jwt)
+        os.environ.setdefault("BASEROW_URL", self.prev_url)
 
 def load_cert() -> Dict:
     config_dir = Path(Path.home(), ".baserow")
