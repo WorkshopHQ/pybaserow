@@ -5,6 +5,8 @@ import requests
 import json
 import logging
 
+from tqdm import tqdm
+
 logger = logging.getLogger(__name__)
 
 class Table(object):
@@ -45,7 +47,7 @@ class Table(object):
         )
 
     def del_rows(self, row_ids: List[int]) -> None:
-        for row_id in row_ids:
+        for row_id in tqdm(row_ids):
             self.del_row(row_id)
 
 
