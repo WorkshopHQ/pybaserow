@@ -3,6 +3,9 @@ from typing import Callable, Iterable, List
 from urllib.parse import urljoin
 import requests
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Table(object):
     def __init__(self, table_id: int, base_url: str, jwt_token: str) -> None:
@@ -25,6 +28,7 @@ class Table(object):
             response = json.loads(res.content)
             rows.extend(response['results'])
             url = response['next']
+            print(f"Loaded {len(rows)} rows")
             # no need for next page if not getting all rows or reaching the end
             if (not get_all) or (url is None):
                 break
