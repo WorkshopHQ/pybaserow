@@ -6,7 +6,6 @@ load_dotenv()
 
 token = login()
 
-db_id = 56
 table_id = 285
 row_ids = []
 for row in get_rows(table_id, True):

@@ -7,4 +7,4 @@ def is_dataops_row(row):
 with BaserowConnect("http://baserow.hub/"):
     table_id = 285
     table = fetch(table_id)
-    dataops_rows = table.get_rows(is_dataops_row)
+    dataops_rows = table.get_rows([is_dataops_row])

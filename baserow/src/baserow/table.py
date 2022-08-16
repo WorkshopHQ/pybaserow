@@ -1,5 +1,5 @@
 import os
-from typing import Callable, Iterable
+from typing import Callable, Iterable, List
 
 class Table(object):
     def __init__(self, id: int, url: str, jwt_token: str) -> None:
@@ -8,7 +8,7 @@ class Table(object):
         self.url = url
         self.jwt_token = jwt_token
 
-    def get_rows(self, filter: Callable = None) -> Iterable:
+    def get_rows(self, filters: List[Callable] = []) -> Iterable:
         return []
 
 def fetch(table_id) -> Table:
