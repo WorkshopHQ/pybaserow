@@ -50,6 +50,27 @@ class Table(object):
         for row_id in tqdm(row_ids):
             self.del_row(row_id)
 
+    def add_row(self, row_data: dict) -> int:
+        url = f"/api/database/rows/table/{self.table_id}/?user_field_names=true"
+        url = urljoin(self.base_url, url)
+        res = requests.post(
+            url,
+            headers={
+                "Authorization": f"JWT {os.environ['BASEROW_JWT']}",
+                "Content-Type": "application/json"
+            },
+            json=row_data
+        )
+        response = json.loads(res.content)
+        return response["id"]
+
+    def add_rows(self, rows_data: List[dict]) -> List[int]:
+        row_ids = []
+        for row_data in rows_data:
+            row_id = self.add_row(row_data)
+            row_ids.append(row_id)
+        return row_ids
+
 
 def fetch(table_id) -> Table:
     return Table(table_id, os.environ['BASEROW_URL'], os.environ['BASEROW_JWT'])
