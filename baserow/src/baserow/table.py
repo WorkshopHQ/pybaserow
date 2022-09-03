@@ -1,9 +1,10 @@
 import os
-from typing import Callable, Iterable, List
-from urllib.parse import urljoin
 import requests
 import json
 import logging
+from typing import Callable, Iterable, List
+from urllib.parse import urljoin
+from pathlib import Path
 
 from tqdm import tqdm
 
@@ -42,7 +43,7 @@ class Table(object):
         requests.delete(
             url,
             headers={
-                "Authorization": f"JWT {os.environ['BASEROW_JWT']}"
+                "Authorization": f"JWT {self.jwt_token}"
             }
         )
 
@@ -56,7 +57,7 @@ class Table(object):
         res = requests.post(
             url,
             headers={
-                "Authorization": f"JWT {os.environ['BASEROW_JWT']}",
+                "Authorization": f"JWT {self.jwt_token}",
                 "Content-Type": "application/json"
             },
             json=row_data
@@ -72,5 +73,21 @@ class Table(object):
         return row_ids
 
 
-def fetch(table_id) -> Table:
+def fetch(table_id: int) -> Table:
     return Table(table_id, os.environ['BASEROW_URL'], os.environ['BASEROW_JWT'])
+
+
+def upload(file_path: Path) -> str:
+    url = f"/api/user-files/upload-file/"
+    url = urljoin(os.environ['BASEROW_URL'], url)
+    res = requests.post(
+        url,
+        headers={
+            "Authorization": f"JWT {os.environ['BASEROW_JWT']}",
+        },
+        files={
+            "file": open(file_path, 'rb')
+        }
+    )
+    response = json.loads(res.content)
+    return response["url"] if "url" in response else ""
