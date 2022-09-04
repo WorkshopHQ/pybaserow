@@ -77,9 +77,9 @@ class Table(object):
 def fetch(table_id: int) -> Table:
     return Table(table_id, os.environ['BASEROW_URL'], os.environ['BASEROW_JWT'])
 
-
+# https://api.baserow.io/api/redoc/
 def upload(file_path: Path) -> str:
-    url = f"/api/user-files/upload-file/"
+    url = "/api/user-files/upload-file/"
     url = urljoin(os.environ['BASEROW_URL'], url)
     res = requests.post(
         url,
@@ -91,7 +91,21 @@ def upload(file_path: Path) -> str:
         }
     )
     response = json.loads(res.content)
-    if  "url" not in response:
-        return ""
-    filename = os.path.basename(urlparse(response["url"]).path)
-    return filename
+    return response["name"] if "name" in response else ""
+
+
+def upload_via_url(file_url: str) -> str:
+    url = "/api/user-files/upload-via-url/"
+    url = urljoin(os.environ['BASEROW_URL'], url)
+    res = requests.post(
+        url,
+        headers={
+            "Authorization": f"JWT {os.environ['BASEROW_JWT']}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "url": file_url
+        }
+    )
+    response = json.loads(res.content)
+    return response["name"] if "name" in response else ""
