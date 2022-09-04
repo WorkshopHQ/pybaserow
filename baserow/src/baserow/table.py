@@ -5,6 +5,7 @@ import logging
 from typing import Callable, Iterable, List
 from urllib.parse import urljoin
 from pathlib import Path
+from urllib.parse import urlparse
 
 from tqdm import tqdm
 
@@ -63,7 +64,7 @@ class Table(object):
             json=row_data
         )
         response = json.loads(res.content)
-        return response["id"]
+        return response["id"] if "id" in response else -1
 
     def add_rows(self, rows_data: List[dict]) -> List[int]:
         row_ids = []
@@ -90,4 +91,7 @@ def upload(file_path: Path) -> str:
         }
     )
     response = json.loads(res.content)
-    return response["url"] if "url" in response else ""
+    if  "url" not in response:
+        return ""
+    filename = os.path.basename(urlparse(response["url"]).path)
+    return filename

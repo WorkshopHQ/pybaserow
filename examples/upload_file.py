@@ -10,5 +10,10 @@ file_path = Path("./file.pdf")
 
 with BaserowConnect(BASEROW_URL):
     table = fetch(TABLE_ID)
-    file_url = upload(file_path)
-    print(file_url)
+    remote_file = upload(file_path)
+    data = {
+        "Name": "upload from sdk",
+        "Files": [{"name": remote_file}]
+    }
+    row_id = table.add_row(data)
+    print(row_id)
