@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Dict, Union
 import requests
 import json
 from pathlib import Path
@@ -8,9 +8,10 @@ from urllib.parse import urljoin
 from rich.prompt import Prompt
 
 class BaserowConnect(object):
-    def __init__(self, url: str) -> None:
+    def __init__(self, url: str, cert: Union[Dict, None] = None) -> None:
         super().__init__()
         self.url = url
+        self.cert = cert
         self.prev_jwt = ""
         self.prev_url = ""
 
@@ -18,7 +19,8 @@ class BaserowConnect(object):
         self.prev_jwt = os.environ.get("BASEROW_JWT", "")
         self.prev_url = os.environ.get("BASEROW_URL", "")
         url = urljoin(self.url, "/api/user/token-auth/")
-        res = requests.post(url, json=load_cert())
+        cert = self.cert if self.cert else load_cert()
+        res = requests.post(url, json=cert)
         if res.status_code != 201:
             raise Exception(f"Failed to authenticate baserow")
         user_token = json.loads(res.text)["token"]
