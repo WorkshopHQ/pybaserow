@@ -19,24 +19,43 @@ class Table(object):
         self.base_url = base_url
         self.jwt_token = jwt_token
 
-    def get_rows(self, filters: List[Callable] = [], get_all: bool = False, as_df: bool = False) -> Iterable:
+    def get_rows(self, filters: List[Callable] = [], get_all: bool = False, as_df: bool = False, size: int = 100) -> Iterable:
         url = f"/api/database/rows/table/{self.table_id}/?user_field_names=true"
         url = urljoin(self.base_url, url)
         rows = []
-        while True:
-            res = requests.get(
-                url,
-                headers={
-                    "Authorization": f"JWT {self.jwt_token}"
-                }
-            )
-            response = json.loads(res.content)
-            rows.extend(response['results'])
-            url = response['next']
-            print(f"[Baserow] Loaded {len(rows)} rows")
-            # no need for next page if not getting all rows or reaching the end
-            if (not get_all) or (url is None):
-                break
+        # Make the initial get request
+        res = requests.get(
+            url,
+            headers={
+                "Authorization": f"JWT {self.jwt_token}"
+            },
+            params={
+                "size": size
+            }
+        )
+        response = json.loads(res.content)
+        rows.extend(response['results'])
+        url = response['next']
+        # Continue fetching rows if required
+        if get_all:
+            num_calls = int(response["count"] / size)
+            print(f"[Baserow] Loading the table")
+            for idx in tqdm(range(num_calls)):
+                res = requests.get(
+                    url,
+                    headers={
+                        "Authorization": f"JWT {self.jwt_token}"
+                    },
+                    params={
+                        "size": size
+                    }
+                )
+                response = json.loads(res.content)
+                rows.extend(response['results'])
+                url = response['next']
+                if url == None:
+                    break
+        print(f"[Baserow] Loaded {len(rows)} rows")
         if as_df: # return as a dataframe
             rows = pd.DataFrame.from_dict(rows)
         return rows
