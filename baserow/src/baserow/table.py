@@ -8,6 +8,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from tqdm import tqdm
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ class Table(object):
         self.base_url = base_url
         self.jwt_token = jwt_token
 
-    def get_rows(self, filters: List[Callable] = [], get_all: bool = False) -> Iterable:
+    def get_rows(self, filters: List[Callable] = [], get_all: bool = False, as_df: bool = False) -> Iterable:
         url = f"/api/database/rows/table/{self.table_id}/?user_field_names=true"
         url = urljoin(self.base_url, url)
         rows = []
@@ -32,10 +33,12 @@ class Table(object):
             response = json.loads(res.content)
             rows.extend(response['results'])
             url = response['next']
-            print(f"Loaded {len(rows)} rows")
+            print(f"[Baserow] Loaded {len(rows)} rows")
             # no need for next page if not getting all rows or reaching the end
             if (not get_all) or (url is None):
                 break
+        if as_df: # return as a dataframe
+            rows = pd.DataFrame.from_dict(rows)
         return rows
 
     def del_row(self, row_id: int) -> None:
